@@ -1,0 +1,261 @@
+{
+  "name": "API Test WorkFlow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3ea6d5c7-7032-4906-8efd-eb68cf61a45b",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://quotes.toscrape.com/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "335549da-2583-4b6a-a8ab-d130502684f7",
+      "name": "Quotes Scrape"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "quote_text",
+              "cssSelector": ".quote .text"
+            },
+            {
+              "key": "author",
+              "cssSelector": ".quote .author"
+            },
+            {
+              "key": "tags",
+              "cssSelector": ".quote .tags .tag"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "af5566a4-0b56-490f-91fa-8a2353e2ea76",
+      "name": "Extract Quote"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1S7ihlNIETppPvyI8B4UMYbSW3ClVPZkhmgyHYAx_QvU",
+          "mode": "list",
+          "cachedResultName": "QuotesScraper_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1S7ihlNIETppPvyI8B4UMYbSW3ClVPZkhmgyHYAx_QvU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1S7ihlNIETppPvyI8B4UMYbSW3ClVPZkhmgyHYAx_QvU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "quote_text",
+              "displayName": "quote_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "author",
+              "displayName": "author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1140,
+        80
+      ],
+      "id": "ddf01db9-6411-4c20-9389-34d85084bbce",
+      "name": "Add to Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7MqrvBu0VUT4FFqY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d9ed00e6-f947-4727-8588-6d0a16732488",
+              "leftValue": "={{$node[\"Extract Quote\"].json[\"author\"]}}\n",
+              "rightValue": "Albert Einstein",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        920,
+        -40
+      ],
+      "id": "33f7df0d-9267-48e5-ba3b-7763264149c4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "quote_text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        660,
+        80
+      ],
+      "id": "53f7c047-b72b-484e-89f9-1f2349b1c031",
+      "name": "Split Out"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Quotes Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quotes Scrape": {
+      "main": [
+        [
+          {
+            "node": "Extract Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Quote": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Sheet": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Add to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "02720f64-7899-4bb1-9377-caf804dde989",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8d66379ddad0b9657294a91a40fa9f93b7683bb9eb65f158d3a8592d64d4422d"
+  },
+  "id": "og7E9C50DQeagAPM",
+  "tags": []
+}
